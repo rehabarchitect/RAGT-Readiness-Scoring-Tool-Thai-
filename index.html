@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RG-RST — เครื่องมือประเมินความพร้อมสำหรับ Robot-Assisted Gait Training</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&family=Noto+Serif+Thai:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f0f2f5;
+    --surface: #ffffff;
+    --surface2: #f7f8fa;
+    --border: #e2e6ec;
+    --navy: #1a2744;
+    --navy-light: #243560;
+    --blue: #2563eb;
+    --blue-light: #dbeafe;
+    --red: #dc2626;
+    --red-light: #fee2e2;
+    --orange: #ea580c;
+    --orange-light: #ffedd5;
+    --yellow: #ca8a04;
+    --yellow-light: #fef9c3;
+    --green: #16a34a;
+    --green-light: #dcfce7;
+    --emerald: #059669;
+    --emerald-light: #d1fae5;
+    --text: #1e293b;
+    --text-secondary: #64748b;
+    --text-muted: #94a3b8;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.06);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 24px 16px 60px;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .wrapper {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  /* Header */
+  .header {
+    background: var(--navy);
+    border-radius: var(--radius) var(--radius) 0 0;
+    padding: 28px 32px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 200px; height: 200px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 50%;
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; left: 30px;
+    width: 140px; height: 140px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 50%;
+  }
+  .header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(37,99,235,0.3);
+    border: 1px solid rgba(37,99,235,0.5);
+    color: #93c5fd;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-bottom: 12px;
+    font-family: 'DM Mono', monospace;
+  }
+  .header-title {
+    font-family: 'Noto Serif Thai', serif;
+    font-size: 22px;
+    color: #fff;
+    line-height: 1.35;
+    margin-bottom: 6px;
+  }
+  .header-abbr {
+    color: #93c5fd;
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+  }
+  .header-subtitle {
+    font-size: 13px;
+    color: #94a3b8;
+    font-weight: 400;
+    margin-top: 4px;
+  }
+
+  /* Patient Info */
+  .patient-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: none;
+    padding: 20px 24px;
+  }
+  .section-label-bar {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+    font-family: 'DM Mono', monospace;
+  }
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 20px;
+  }
+  .info-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+  .info-group input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 8px 12px;
+    font-family: 'Sarabun', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .info-group input:focus {
+    border-color: var(--blue);
+    background: #fff;
+  }
+
+  /* Domains */
+  .domains {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: none;
+    padding: 8px 0;
+  }
+
+  .domain {
+    padding: 0 24px;
+    margin: 4px 0;
+  }
+  .domain-inner {
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .domain-inner:hover {
+    border-color: #c7d2fe;
+    box-shadow: 0 2px 12px rgba(37,99,235,0.07);
+  }
+
+  .domain-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 13px 16px;
+    cursor: pointer;
+    background: var(--surface2);
+    user-select: none;
+    gap: 12px;
+  }
+  .domain-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-muted);
+    background: var(--border);
+    border-radius: 6px;
+    padding: 2px 7px;
+    flex-shrink: 0;
+  }
+  .domain-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--navy);
+    flex: 1;
+    line-height: 1.4;
+  }
+  .domain-name-en {
+    display: block;
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+    margin-top: 1px;
+  }
+  .domain-score-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    background: #fff;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 3px 10px;
+    min-width: 52px;
+    text-align: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .domain-score-badge.scored {
+    color: var(--blue);
+    border-color: var(--blue);
+    background: var(--blue-light);
+  }
+  .chevron {
+    color: var(--text-muted);
+    transition: transform 0.25s;
+    flex-shrink: 0;
+  }
+  .domain-inner.open .chevron { transform: rotate(180deg); }
+
+  .domain-body {
+    display: none;
+    padding: 4px 16px 14px;
+    background: #fff;
+    border-top: 1px solid var(--border);
+  }
+  .domain-inner.open .domain-body { display: block; }
+
+  .option-list { list-style: none; }
+  .option-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 9px 10px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background 0.15s;
+    margin: 2px 0;
+  }
+  .option-item:hover { background: var(--surface2); }
+  .option-item input[type="radio"] { display: none; }
+  .option-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+  }
+  .option-dot::after {
+    content: '';
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #fff;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .option-item.selected .option-dot {
+    border-color: var(--blue);
+    background: var(--blue);
+  }
+  .option-item.selected .option-dot::after { opacity: 1; }
+
+  .option-score {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    background: var(--surface2);
+    border-radius: 5px;
+    padding: 1px 6px;
+    flex-shrink: 0;
+    margin-top: 3px;
+  }
+  .option-item.selected .option-score {
+    background: var(--blue-light);
+    color: var(--blue);
+  }
+  .option-label {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+  .option-label-en {
+    display: block;
+    font-size: 11.5px;
+    color: var(--text-muted);
+    font-style: italic;
+    margin-top: 1px;
+  }
+  .option-item.selected .option-label { color: var(--navy); }
+
+  /* Score Panel */
+  .score-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: none;
+    padding: 24px;
+  }
+
+  .score-display {
+    background: var(--navy);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-bottom: 20px;
+  }
+
+  .score-top-row {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .score-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #94a3b8;
+    flex-shrink: 0;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .score-number-group {
+    display: flex;
+    align-items: baseline;
+    gap: 2px;
+  }
+
+  .score-number {
+    font-family: 'DM Mono', monospace;
+    font-size: 56px;
+    color: #fbbf24;
+    line-height: 1;
+    font-weight: 500;
+    display: inline-block;
+    min-width: 1ch;
+    -webkit-text-fill-color: #fbbf24;
+    text-shadow: 0 0 20px rgba(251,191,36,0.3);
+  }
+
+  .score-denom {
+    font-family: 'DM Mono', monospace;
+    font-size: 20px;
+    color: #93c5fd;
+    font-weight: 400;
+  }
+
+  .score-progress-wrap { width: 100%; }
+
+  .score-progress-track {
+    height: 10px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 99px;
+    overflow: hidden;
+    margin-bottom: 6px;
+  }
+
+  .score-progress-fill {
+    height: 100%;
+    border-radius: 99px;
+    transition: width 0.4s cubic-bezier(.4,0,.2,1), background 0.4s;
+    width: 0%;
+    background: var(--blue);
+  }
+
+  .score-domains-completed {
+    font-size: 12px;
+    color: #64748b;
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* Interpretation */
+  .interpretation {
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    display: none;
+    animation: fadeIn 0.3s ease;
+    margin-bottom: 16px;
+  }
+  .interpretation.show { display: flex; align-items: flex-start; gap: 14px; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:none; } }
+
+  .interp-icon { font-size: 24px; flex-shrink: 0; margin-top: 2px; }
+  .interp-range {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    margin-bottom: 3px;
+    opacity: 0.7;
+  }
+  .interp-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .interp-desc {
+    font-size: 13.5px;
+    line-height: 1.55;
+    opacity: 0.85;
+  }
+  .interp-red { background: var(--red-light); color: var(--red); }
+  .interp-orange { background: var(--orange-light); color: var(--orange); }
+  .interp-yellow { background: var(--yellow-light); color: var(--yellow); }
+  .interp-green { background: var(--emerald-light); color: var(--emerald); }
+
+  /* Action guidance */
+  .action-section { margin-top: 16px; }
+  .action-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+    font-family: 'DM Mono', monospace;
+  }
+  .action-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .action-tag {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #fff;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .action-tag.active {
+    border-color: #f97316;
+    color: #c2410c;
+    background: #fff7ed;
+  }
+  .action-tag .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .action-tag.active .dot { background: #f97316; }
+
+  /* Notes */
+  .notes-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: none;
+    padding: 20px 24px;
+  }
+  .notes-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    font-family: 'DM Mono', monospace;
+  }
+  .notes-area {
+    width: 100%;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    font-family: 'Sarabun', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    resize: vertical;
+    min-height: 80px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .notes-area:focus { border-color: var(--blue); background: #fff; }
+
+  /* Footer */
+  .footer-card {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-top: none;
+    border-radius: 0 0 var(--radius) var(--radius);
+    padding: 14px 24px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .footer-icon { font-size: 16px; flex-shrink: 0; margin-top: 2px; }
+  .footer-text { font-size: 13px; color: #92400e; line-height: 1.55; }
+
+  /* Buttons */
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 18px;
+    border-radius: var(--radius-sm);
+    font-family: 'Sarabun', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.18s;
+  }
+  .btn-primary { background: var(--navy); color: #fff; }
+  .btn-primary:hover { background: var(--navy-light); }
+  .btn-ghost { background: var(--surface); color: var(--text-secondary); border: 1.5px solid var(--border); }
+  .btn-ghost:hover { border-color: var(--text-muted); color: var(--text); }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 0 24px;
+  }
+
+  /* Progress indicator at top */
+  .progress-bar-top {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: none;
+    padding: 10px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .progress-steps {
+    display: flex;
+    gap: 4px;
+    flex: 1;
+  }
+  .progress-step {
+    height: 4px;
+    flex: 1;
+    background: var(--border);
+    border-radius: 99px;
+    transition: background 0.3s;
+  }
+  .progress-step.done { background: var(--blue); }
+  .progress-step.active { background: #93c5fd; }
+  .progress-count {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+  }
+
+  /* References Section */
+  .references-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: none;
+    padding: 0;
+  }
+  .references-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 24px;
+    cursor: pointer;
+    user-select: none;
+    background: var(--surface2);
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s;
+  }
+  .references-toggle:hover { background: #eef0f4; }
+  .references-toggle.open { border-bottom-color: var(--border); }
+  .references-toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .references-toggle-label .ref-icon {
+    font-size: 16px;
+  }
+  .references-toggle-title {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+  }
+  .ref-count-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    background: var(--blue-light);
+    color: var(--blue);
+    border-radius: 20px;
+    padding: 2px 8px;
+  }
+  .references-chevron {
+    color: var(--text-muted);
+    transition: transform 0.25s;
+    flex-shrink: 0;
+  }
+  .references-toggle.open .references-chevron { transform: rotate(180deg); }
+  .references-body {
+    display: none;
+    padding: 20px 24px;
+  }
+  .references-body.open { display: block; }
+
+  .ref-domain-group {
+    margin-bottom: 20px;
+  }
+  .ref-domain-group:last-child { margin-bottom: 0; }
+  .ref-domain-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--blue);
+    background: var(--blue-light);
+    border-radius: 6px;
+    padding: 3px 9px;
+    margin-bottom: 10px;
+    font-family: 'DM Mono', monospace;
+  }
+  .ref-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .ref-item {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .ref-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 1px 6px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    min-width: 28px;
+    text-align: center;
+  }
+  .ref-text {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+  .ref-text em {
+    font-style: italic;
+    color: var(--text);
+  }
+  .ref-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 16px 0;
+  }
+  .ref-note {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    font-style: italic;
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--border);
+    line-height: 1.6;
+  }
+
+  @media print {
+    body { background: #fff; padding: 0; }
+    .btn-row, .btn { display: none !important; }
+    .domain-body { display: block !important; }
+    .references-body { display: block !important; }
+    .wrapper { max-width: 100%; }
+  }
+
+  @media (max-width: 480px) {
+    .info-grid { grid-template-columns: 1fr; }
+    .header-title { font-size: 18px; }
+    .score-display { padding: 16px 18px; }
+    .score-number { font-size: 48px; }
+    .domain { padding: 0 12px; }
+    .score-panel { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-badge">Clinical Screening Tool &nbsp;·&nbsp; RG-RST v1.0</div>
+    <div class="header-title">เครื่องมือประเมินความพร้อม<br>สำหรับ Robot-Assisted Gait Training</div>
+    <div class="header-abbr">RG-RST — Robot Gait Readiness Scoring Tool</div>
+    <div class="header-subtitle">EksoNR &nbsp;/&nbsp; R-GAIT &nbsp;/&nbsp; HIWIN &nbsp;·&nbsp; ประเมิน 8 หมวด รวม 24 คะแนน</div>
+  </div>
+
+  <!-- Patient Info -->
+  <div class="patient-card">
+    <div class="section-label-bar">ข้อมูลผู้รับบริการ</div>
+    <div class="info-grid">
+      <div class="info-group">
+        <label>ชื่อ-นามสกุล</label>
+        <input type="text" placeholder="ชื่อเต็ม" id="patientName">
+      </div>
+      <div class="info-group">
+        <label>HN</label>
+        <input type="text" placeholder="เลขทะเบียนผู้ป่วย" id="hn">
+      </div>
+      <div class="info-group">
+        <label>วันที่ประเมิน</label>
+        <input type="date" id="date">
+      </div>
+      <div class="info-group">
+        <label>ผู้ประเมิน</label>
+        <input type="text" placeholder="ชื่อ PT / เลขใบประกอบวิชาชีพ" id="assessor">
+      </div>
+      <div class="info-group" style="grid-column:1/-1">
+        <label>การวินิจฉัย (Diagnosis)</label>
+        <input type="text" placeholder="เช่น Stroke, SCI, TBI" id="diagnosis">
+      </div>
+    </div>
+  </div>
+
+  <!-- Progress bar -->
+  <div class="progress-bar-top">
+    <div class="progress-steps" id="progressSteps"></div>
+    <div class="progress-count" id="progressCount">0 / 8</div>
+  </div>
+
+  <!-- Domains -->
+  <div class="domains" id="domainsContainer"></div>
+
+  <!-- Score Panel -->
+  <div class="score-panel">
+    <div class="score-display">
+      <div class="score-top-row">
+        <div class="score-label">คะแนนรวม</div>
+        <div class="score-number-group">
+          <span class="score-number" id="totalScore">0</span>
+          <span class="score-denom">&thinsp;/24</span>
+        </div>
+      </div>
+      <div class="score-progress-wrap">
+        <div class="score-progress-track">
+          <div class="score-progress-fill" id="progressFill"></div>
+        </div>
+        <div class="score-domains-completed" id="domainsCompleted">ประเมินแล้ว 0 / 8 หมวด</div>
+      </div>
+    </div>
+
+    <!-- Interpretations -->
+    <div class="interpretation interp-red" id="interp-red">
+      <div class="interp-icon">🔴</div>
+      <div>
+        <div class="interp-range">SCORE 0 – 10</div>
+        <div class="interp-title">ยังไม่พร้อมสำหรับ RAGT</div>
+        <div class="interp-desc">แนะนำให้เตรียมความพร้อมก่อน ได้แก่ ROM training, trunk control, และ cardiopulmonary endurance แล้วค่อยประเมินซ้ำ</div>
+      </div>
+    </div>
+    <div class="interpretation interp-orange" id="interp-orange">
+      <div class="interp-icon">🟠</div>
+      <div>
+        <div class="interp-range">SCORE 11 – 16</div>
+        <div class="interp-title">พร้อมแบบมีเงื่อนไข (Conditional Readiness)</div>
+        <div class="interp-desc">ต้องการการช่วยเหลือสูงและติดตามใกล้ชิด แนะนำ session สั้น พร้อม vital sign surveillance อย่างเคร่งครัด</div>
+      </div>
+    </div>
+    <div class="interpretation interp-yellow" id="interp-yellow">
+      <div class="interp-icon">🟡</div>
+      <div>
+        <div class="interp-range">SCORE 17 – 21</div>
+        <div class="interp-title">เหมาะสมสำหรับ RAGT (Suitable Candidate)</div>
+        <div class="interp-desc">แนะนำ robot-assisted gait training มาตรฐาน เลือก device ตาม primary goal และระดับ neuro control</div>
+      </div>
+    </div>
+    <div class="interpretation interp-green" id="interp-green">
+      <div class="interp-icon">🟢</div>
+      <div>
+        <div class="interp-range">SCORE 22 – 24</div>
+        <div class="interp-title">ผู้ป่วยเหมาะสมสูงสุด (Optimal Candidate)</div>
+        <div class="interp-desc">สามารถฝึก high-intensity robotic gait training ได้ พิจารณา progressive challenge และตั้ง functional goal</div>
+      </div>
+    </div>
+
+    <!-- Action Guidance -->
+    <div class="action-section">
+      <div class="action-title">แนวทางดำเนินการ (Clinical Action)</div>
+      <div class="action-tags">
+        <div class="action-tag" id="act-rom">
+          <span class="dot"></span> ROM จำกัด → Stretching / Positioning
+        </div>
+        <div class="action-tag" id="act-trunk">
+          <span class="dot"></span> Trunk ไม่มั่นคง → Sitting Balance Training
+        </div>
+        <div class="action-tag" id="act-endurance">
+          <span class="dot"></span> Endurance ต่ำ → Graded Aerobic Conditioning
+        </div>
+        <div class="action-tag" id="act-motivation">
+          <span class="dot"></span> แรงจูงใจต่ำ → Education + Visual Feedback
+        </div>
+        <div class="action-tag" id="act-medical">
+          <span class="dot"></span> Medical ไม่คงที่ → Stabilize Vitals ก่อน
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="window.print()">🖨️ พิมพ์ / บันทึก PDF</button>
+      <button class="btn btn-ghost" onclick="resetAll()">↺ รีเซ็ตแบบฟอร์ม</button>
+    </div>
+  </div>
+
+  <!-- Notes -->
+  <div class="notes-section">
+    <div class="notes-label">บันทึกเพิ่มเติม</div>
+    <textarea class="notes-area" placeholder="สังเกตการณ์ทางคลินิก, เหตุผลในการเลือก device, แผนการติดตาม..."></textarea>
+  </div>
+
+  <!-- References -->
+  <div class="references-section">
+    <div class="references-toggle" id="refToggle" onclick="toggleRefs()">
+      <div class="references-toggle-label">
+        <span class="ref-icon">📚</span>
+        <span class="references-toggle-title">References</span>
+        <span class="ref-count-badge">10 งาน</span>
+      </div>
+      <svg class="references-chevron" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+      </svg>
+    </div>
+    <div class="references-body" id="refBody">
+
+      <!-- Group 1 -->
+      <div class="ref-domain-group">
+        <div class="ref-domain-tag">Domain 1 &amp; 6 — Motivation &amp; Cognition</div>
+        <ul class="ref-list">
+          <li class="ref-item">
+            <span class="ref-num">1</span>
+            <span class="ref-text">
+              Bae, S., Kim, B. R., Kim, H., &amp; Han, E. Y. (2021). Stage 2: Who are the best candidates for robotic gait training rehabilitation in hemiparetic stroke? <em>Frontiers in Neurology, 12</em>, 756431. https://doi.org/10.3389/fneur.2021.756431
+              <br><span style="color:var(--text-muted);font-size:11.5px;">▸ เสนอ schematic guideline คัดเลือก candidate ตาม FAC level; motivation เป็น prerequisite ตลอดการศึกษา</span>
+            </span>
+          </li>
+          <li class="ref-item">
+            <span class="ref-num">2</span>
+            <span class="ref-text">
+              ClinicalTrials.gov. (2022). <em>Walkbot robotic training for improvement of gait</em> (NCT03554642). U.S. National Library of Medicine. https://clinicaltrials.gov/study/NCT03554642
+              <br><span style="color:var(--text-muted);font-size:11.5px;">▸ กำหนด ability to follow 2-step commands และ exclude severe mental illness เป็น eligibility criteria</span>
+            </span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="ref-divider"></div>
+
+      <!-- Group 2 -->
+      <div class="ref-domain-group">
+        <div class="ref-domain-tag">Domain 2 &amp; 8 — ROM &amp; Device Compatibility</div>
+        <ul class="ref-list">
+          <li class="ref-item">
+            <span class="ref-num">3</span>
+            <span class="ref-text">
+              ClinicalTrials.gov. (2023). <em>Comparison of gait training methods in sub-acute stroke and spinal cord injury</em> (NCT06169657). U.S. National Library of Medicine. https://clinicaltrials.gov/study/NCT06169657
+              <br><span style="color:var(--text-muted);font-size:11.5px;">▸ ระบุ ROM criteria สำหรับ EksoNR: knee flexion contracture ≤12°, hip flexion contracture ≤17°, MAS &lt;3</span>
+            </span>
+          </li>
+          <li class="ref-item">
+            <span class="ref-num">4</span>
+            <span class="ref-text">
+              ClinicalTrials.gov. (2016). <em>Walking improvement for SCI with exoskeleton (WISE Trial)</em> (NCT02943915). U.S. National Library of Medicine. https://clinicaltrials.gov/study/NCT02943915
+              <br><span style="color:var(--text-muted);font-size:11.5px;">▸ กำหนด near-normal ROM ใน hip/knee/ankle เป็นเกณฑ์รับเข้า และ exclude uncontrolled orthostatic hypotension</span>
+            </span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="ref-divider"></div>
+
+      <!-- Group 3 -->
+      <div class="ref-domain-group">
+        <div class="ref-domain-tag">Domain 3 — Trunk Control</div>
+        <ul class="ref-list">
+          <li class="ref-item">
+            <span class="ref-num">5</span>
+            <span class="ref-text">
+              Kim, G. J., Lim, S. M., &amp; You, J. H. (2016). Clinical characteristics of proper robot-assisted gait training group in non-ambulatory subacute stroke patients. <em>Annals of Rehabilitation Medicine, 40</em>(2), 224–233. https://doi.org/10.5535/arm.2016.40.2.224
+              <br><span style="color:var(--text-muted);font-size:11.5px;">▸ กำหนด FAC &lt;3 และ exclude ROM จำกัดมาก, medical instability; trunk control เป็น implicit prerequisite</span>
+            </span>
+          </li>
+          <li class="ref-item">
+            <span class="ref-num">6</span>
+            <span class="ref-text">
+              ClinicalTrials.gov. (2022). <em>Walking with the EksoNR in stroke patients and healthy controls</em> (NCT05334030). U.S. National Library of Medicine. https://clinicaltrials.gov/study/NCT05334030
+              <br><span style="color:var(--text-muted);font-size:11.5px;">▸ ใช้ FAC &lt;3 และ MoCA &gt;25 เป็น eligibility criteria สะท้อนความสำคัญของ trunk stability และ cognition</span>
+            </span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="ref-divider"></div>
+
+      <!-- Group 4 -->
+      <div class="ref-domain-group">
+        <div class="ref-domain-tag">Domain 5 — Cardiopulmonary Endurance</div>
+        <ul class="ref-list">
+          <li class="ref-item">
+            <span class="ref-num">7</span>
+            <span class="ref-text">
+              Jang, Y. C., Park, H. K., Han, J. Y., Choi, I. S., &amp; Song, M. K. (2019). Cardiopulmonary function after robotic exoskeleton-assisted over-ground walking training of a patient with an incomplete spinal cord injury: Case report. <em>Medicine, 98</em>(51), e18286. https://doi.org/10.1097/MD.0000000000018286
+              <br><span style="color:var(--text-muted);font-size:11.5px;">▸ รายงาน cardiopulmonary function ดีขึ้นหลัง powered exoskeleton training 6 สัปดาห์ใน incomplete SCI</span>
+            </span>
+          </li>
+          <li class="ref-item">
+            <span class="ref-num">8</span>
+            <span class="ref-text">
+              Zhao, Z., Liang, Z., Yin, J., &amp; Wang, X. (2024). Effects of robot-assisted gait training on cardiopulmonary function and lower extremity strength in individuals with spinal cord injury: A systematic review and meta-analysis. <em>Frontiers in Neurology, 15</em>, 1297257. https://doi.org/10.3389/fneur.2024.1297257
+              <br><span style="color:var(--text-muted);font-size:11.5px;">▸ Systematic review ยืนยัน vicious cycle ระหว่าง mobility limitation กับ cardiopulmonary decline ใน SCI</span>
+            </span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="ref-divider"></div>
+
+      <!-- Group 5 -->
+      <div class="ref-domain-group">
+        <div class="ref-domain-tag">Domain 7 — Medical Stability &amp; Orthostatic Hypotension</div>
+        <ul class="ref-list">
+          <li class="ref-item">
+            <span class="ref-num">9</span>
+            <span class="ref-text">
+              Sato, T., Miyakoshi, N., Kasukawa, Y., Kudo, D., Hata, K., Wada, M., Takayuki, Y., Okura, K., Suda, T., Maeda, D., &amp; Iwami, T. (2025). Effects of gait rehabilitation robot combined with electrical stimulation on spinal cord injury patients' blood pressure. <em>Sensors, 25</em>(4), 1052. https://doi.org/10.3390/s25041052
+              <br><span style="color:var(--text-muted);font-size:11.5px;">▸ Robotic training + FES ช่วยรักษา hemodynamic stability ระหว่าง orthostatic stress ใน SCI ได้ดีกว่า tilt table alone</span>
+            </span>
+          </li>
+          <li class="ref-item">
+            <span class="ref-num">10</span>
+            <span class="ref-text">
+              Kennedy Krieger Institute — International Center for Spinal Cord Injury. (2019). Activity-based restorative therapy steps into robotic gait training: Innovative approaches for patients with chronic spinal cord injuries. <em>Rehab Management.</em> https://rehabpub.com/gait-balance/assistive-devices/activity-based-restorative-therapy-steps-robotic-gait-training-innovative-approaches-patients-chronic-spinal-cord-injuries/
+              <br><span style="color:var(--text-muted);font-size:11.5px;">▸ ระบุ absolute contraindications: severe orthostatic hypotension, cardiac/vascular disease, open wounds, pregnancy</span>
+            </span>
+          </li>
+        </ul>
+      </div>
+
+      <p class="ref-note">
+        * References เหล่านี้ใช้สนับสนุนเกณฑ์การประเมินในแต่ละ domain ของ RG-RST v1.0
+        การตัดสินใจทางคลินิกควรพิจารณาร่วมกับ clinical judgment และบริบทของแต่ละสถาบัน
+      </p>
+
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer-card">
+    <div class="footer-icon">⚠️</div>
+    <div class="footer-text">
+      <strong>Clinical Use Statement:</strong> เครื่องมือนี้ออกแบบมาเพื่อช่วยประกอบการตัดสินใจทางคลินิกสำหรับ robot-assisted gait training เท่านั้น การตัดสินใจขั้นสุดท้ายควรอยู่บนการพิจารณาของทีมสหวิชาชีพฟื้นฟูสมรรถภาพ
+    </div>
+  </div>
+
+</div>
+
+<script>
+const domains = [
+  {
+    id: 'motivation',
+    name: 'แรงจูงใจและความร่วมมือ',
+    nameEn: 'Motivation & Engagement',
+    options: [
+      { score: 0, label: 'ปฏิเสธการฝึก / ไม่ให้ความร่วมมือ', labelEn: 'Refuses participation / non-cooperative' },
+      { score: 1, label: 'ลังเล ต้องกระตุ้นมาก', labelEn: 'Reluctant, requires high encouragement' },
+      { score: 2, label: 'ให้ความร่วมมือ ยินดีลอง', labelEn: 'Cooperative, willing to try' },
+      { score: 3, label: 'มีแรงจูงใจสูง ขอฝึกการเดินเอง', labelEn: 'Highly motivated, actively requests walking training' },
+    ],
+    actionId: 'act-motivation'
+  },
+  {
+    id: 'rom',
+    name: 'ROM ของขาและข้อสะโพก/เข่า/ข้อเท้า',
+    nameEn: 'Lower Limb Functional ROM (Hip / Knee / Ankle)',
+    options: [
+      { score: 0, label: 'จำกัดมาก ไม่สามารถใส่ device ได้', labelEn: 'Severe limitation, not compatible with robot' },
+      { score: 1, label: 'จำกัดมาก ต้อง pre-stretching / ช่วยเหลือสูง', labelEn: 'Significant limitation, requires pre-stretching / high assistance' },
+      { score: 2, label: 'Functional ได้เมื่อปรับ device', labelEn: 'Functional with device adjustment' },
+      { score: 3, label: 'ROM เพียงพอสำหรับการฝึกอย่างปลอดภัย', labelEn: 'Adequate ROM for safe training' },
+    ],
+    actionId: 'act-rom'
+  },
+  {
+    id: 'trunk',
+    name: 'การควบคุม Trunk (Trunk Control)',
+    nameEn: 'Trunk Control',
+    options: [
+      { score: 0, label: 'ไม่สามารถนั่งได้อิสระ', labelEn: 'Unable to sit independently' },
+      { score: 1, label: 'ต้องการการพยุงตลอดเวลา', labelEn: 'Requires continuous support' },
+      { score: 2, label: 'นั่งได้อิสระแต่มี sway', labelEn: 'Independent sitting with sway' },
+      { score: 3, label: 'Trunk control มั่นคง', labelEn: 'Stable trunk control' },
+    ],
+    actionId: 'act-trunk'
+  },
+  {
+    id: 'motor',
+    name: 'การควบคุมการเคลื่อนไหวขา (Motor Control)',
+    nameEn: 'Motor Control / Lower Limb Coordination',
+    options: [
+      { score: 0, label: 'ไม่มี voluntary control / spasticity รุนแรง', labelEn: 'No voluntary control / severe spasticity' },
+      { score: 1, label: 'Selective control ต่ำ มี synergy dominance', labelEn: 'Poor selective control, synergy dominance' },
+      { score: 2, label: 'Selective control บางส่วน', labelEn: 'Partial selective control' },
+      { score: 3, label: 'สามารถเริ่ม stepping ได้ดี', labelEn: 'Good voluntary stepping initiation' },
+    ],
+    actionId: null
+  },
+  {
+    id: 'cardio',
+    name: 'ความทนทานระบบหัวใจและปอด (Cardiopulmonary Endurance)',
+    nameEn: 'Cardiopulmonary Endurance',
+    options: [
+      { score: 0, label: 'ทนต่อ sitting/standing ไม่ได้', labelEn: 'Unable to tolerate sitting/standing activity' },
+      { score: 1, label: 'ทนได้ 5–10 นาที', labelEn: 'Tolerates 5–10 minutes activity' },
+      { score: 2, label: 'ทนได้ 10–20 นาที', labelEn: 'Tolerates 10–20 minutes activity' },
+      { score: 3, label: 'ทนได้ >20–30 นาที', labelEn: 'Tolerates >20–30 minutes activity' },
+    ],
+    actionId: 'act-endurance'
+  },
+  {
+    id: 'cognition',
+    name: 'Cognition & การสื่อสาร',
+    nameEn: 'Cognition & Communication',
+    options: [
+      { score: 0, label: 'ไม่สามารถปฏิบัติตามคำสั่งได้', labelEn: 'Unable to follow commands' },
+      { score: 1, label: 'ตอบสนองต่อคำสั่งง่ายๆ ไม่สม่ำเสมอ', labelEn: 'Inconsistent response to simple commands' },
+      { score: 2, label: 'ปฏิบัติตามคำสั่งได้', labelEn: 'Able to follow commands' },
+      { score: 3, label: 'สื่อสารได้ดี รายงาน symptom ได้', labelEn: 'Good communication and symptom reporting' },
+    ],
+    actionId: null
+  },
+  {
+    id: 'medical',
+    name: 'ความคงที่ทางการแพทย์ (Medical Stability)',
+    nameEn: 'Medical Stability / Safety',
+    options: [
+      { score: 0, label: 'Hemodynamically unstable / Orthostatic hypotension รุนแรง', labelEn: 'Hemodynamically unstable / severe orthostatic hypotension' },
+      { score: 1, label: 'ค่อนข้างไม่คงที่ ต้องติดตามใกล้ชิด', labelEn: 'Borderline stability' },
+      { score: 2, label: 'คงที่โดยมีข้อควรระวัง', labelEn: 'Stable with precautions' },
+      { score: 3, label: 'คงที่สมบูรณ์', labelEn: 'Fully stable' },
+    ],
+    actionId: 'act-medical'
+  },
+  {
+    id: 'device',
+    name: 'ความเข้ากันได้ของร่างกายกับ Device',
+    nameEn: 'Body & Device Compatibility',
+    options: [
+      { score: 0, label: 'ไม่สามารถใส่ device ได้อย่างปลอดภัย', labelEn: 'Cannot be safely fitted into device' },
+      { score: 1, label: 'การ fitting ยาก / ความเสี่ยงสูงในการ setup', labelEn: 'Difficult fitting / high risk setup' },
+      { score: 2, label: 'ใช้ได้เมื่อปรับ device', labelEn: 'Usable with adjustments' },
+      { score: 3, label: 'Setup ราบรื่น ปลอดภัยดี', labelEn: 'Safe and smooth device setup' },
+    ],
+    actionId: null
+  },
+];
+
+const scores = {};
+
+function buildProgressSteps() {
+  const container = document.getElementById('progressSteps');
+  domains.forEach((d, i) => {
+    const step = document.createElement('div');
+    step.className = 'progress-step';
+    step.id = 'step-' + d.id;
+    container.appendChild(step);
+  });
+}
+
+function updateProgressSteps() {
+  const completed = Object.keys(scores).length;
+  document.getElementById('progressCount').textContent = `${completed} / 8`;
+  domains.forEach(d => {
+    const step = document.getElementById('step-' + d.id);
+    if (scores[d.id] !== undefined) {
+      step.classList.add('done');
+      step.classList.remove('active');
+    } else {
+      step.classList.remove('done');
+    }
+  });
+}
+
+function buildDomains() {
+  const container = document.getElementById('domainsContainer');
+  domains.forEach((d, i) => {
+    const domainEl = document.createElement('div');
+    domainEl.className = 'domain';
+    domainEl.innerHTML = `
+      <div class="domain-inner" id="inner-${d.id}">
+        <div class="domain-header" onclick="toggleDomain('${d.id}')">
+          <span class="domain-num">${String(i+1).padStart(2,'0')}</span>
+          <span class="domain-name">
+            ${d.name}
+            <span class="domain-name-en">${d.nameEn}</span>
+          </span>
+          <span class="domain-score-badge" id="badge-${d.id}">— /3</span>
+          <svg class="chevron" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </div>
+        <div class="domain-body">
+          <ul class="option-list">
+            ${d.options.map(opt => `
+              <li class="option-item" id="opt-${d.id}-${opt.score}" onclick="selectOption('${d.id}', ${opt.score})">
+                <div class="option-dot"></div>
+                <span class="option-score">${opt.score}</span>
+                <span class="option-label">
+                  ${opt.label}
+                  <span class="option-label-en">${opt.labelEn}</span>
+                </span>
+              </li>
+            `).join('')}
+          </ul>
+        </div>
+      </div>
+    `;
+    container.appendChild(domainEl);
+    if (i === 0) toggleDomain(d.id);
+  });
+}
+
+function toggleDomain(id) {
+  const inner = document.getElementById('inner-' + id);
+  inner.classList.toggle('open');
+}
+
+function selectOption(domainId, score) {
+  scores[domainId] = score;
+  const domain = domains.find(d => d.id === domainId);
+  domain.options.forEach(opt => {
+    const el = document.getElementById(`opt-${domainId}-${opt.score}`);
+    el.classList.toggle('selected', opt.score === score);
+  });
+  const badge = document.getElementById('badge-' + domainId);
+  badge.textContent = `${score} /3`;
+  badge.classList.add('scored');
+
+  const idx = domains.findIndex(d => d.id === domainId);
+  if (idx < domains.length - 1) {
+    const nextId = domains[idx + 1].id;
+    const nextInner = document.getElementById('inner-' + nextId);
+    if (!nextInner.classList.contains('open')) {
+      setTimeout(() => toggleDomain(nextId), 200);
+    }
+  }
+  updateScore();
+  updateProgressSteps();
+}
+
+function updateScore() {
+  const completed = Object.keys(scores).length;
+  const total = Object.values(scores).reduce((a, b) => a + b, 0);
+
+  document.getElementById('totalScore').textContent = total;
+  document.getElementById('domainsCompleted').textContent = `ประเมินแล้ว ${completed} / 8 หมวด`;
+
+  const pct = (total / 24) * 100;
+  const fill = document.getElementById('progressFill');
+  fill.style.width = pct + '%';
+
+  if (total <= 10) fill.style.background = '#dc2626';
+  else if (total <= 16) fill.style.background = '#ea580c';
+  else if (total <= 21) fill.style.background = '#ca8a04';
+  else fill.style.background = '#059669';
+
+  ['red','orange','yellow','green'].forEach(c => {
+    document.getElementById('interp-' + c).classList.remove('show');
+  });
+  if (completed > 0) {
+    if (total <= 10) document.getElementById('interp-red').classList.add('show');
+    else if (total <= 16) document.getElementById('interp-orange').classList.add('show');
+    else if (total <= 21) document.getElementById('interp-yellow').classList.add('show');
+    else document.getElementById('interp-green').classList.add('show');
+  }
+
+  domains.forEach(d => {
+    if (d.actionId) {
+      const tag = document.getElementById(d.actionId);
+      const sc = scores[d.id];
+      tag.classList.toggle('active', sc !== undefined && sc <= 1);
+    }
+  });
+}
+
+function resetAll() {
+  if (!confirm('รีเซ็ตคะแนนทั้งหมด?')) return;
+  Object.keys(scores).forEach(k => delete scores[k]);
+  domains.forEach(d => {
+    d.options.forEach(opt => {
+      document.getElementById(`opt-${d.id}-${opt.score}`).classList.remove('selected');
+    });
+    const badge = document.getElementById('badge-' + d.id);
+    badge.textContent = '— /3';
+    badge.classList.remove('scored');
+    document.getElementById('inner-' + d.id).classList.remove('open');
+    document.getElementById('step-' + d.id).classList.remove('done', 'active');
+  });
+  toggleDomain(domains[0].id);
+  updateScore();
+  document.getElementById('progressCount').textContent = '0 / 8';
+  ['patientName','hn','date','assessor','diagnosis'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.querySelector('.notes-area').value = '';
+}
+
+function toggleRefs() {
+  const toggle = document.getElementById('refToggle');
+  const body = document.getElementById('refBody');
+  toggle.classList.toggle('open');
+  body.classList.toggle('open');
+}
+
+document.getElementById('date').valueAsDate = new Date();
+buildProgressSteps();
+buildDomains();
+updateScore();
+</script>
+</body>
+</html>
